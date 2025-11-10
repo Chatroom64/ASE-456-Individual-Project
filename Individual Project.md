@@ -18,14 +18,14 @@ title: David-Michael's Project
  - [ ] Search for a deck across the entire stock of decks
 ---
 # Requirements
-- [ ] As a new user, I should be able to create an account to create flash card decks.
-- [ ] As a returning user, I should be able to sign in to the app, sign out of the app, and potentially delete my account.
-- [ ] As an authorized user, I should be able to create, delete and edit flashcard decks.
-- [ ] As an authorized user, I should be able to sort decks by subject, date, or whatever criteria I want.
-- [ ] As an authorized user, I should be able to create a "front" and "back" to individual cards for questions and answers.
-- [ ] As an authorized user, I should be able to flip cards to change the sides I see to check my answers.
-- [ ] As an authorized user, I should be able to see my score.
-- [ ] As an authorized user, I should be able to search for an existing card deck.
+- [x] As a new user, I should be able to create an account to create flash card decks.
+- [x] As a returning user, I should be able to sign in to the app, sign out of the app, and potentially delete my account.
+- [x] As an authorized user, I should be able to create, delete and edit flashcard decks.
+- [x] As an authorized user, I should be able to sort decks by subject, date, or whatever criteria I want.
+- [x] As an authorized user, I should be able to create a "front" and "back" to individual cards for questions and answers.
+- [x] As an authorized user, I should be able to flip cards to change the sides I see to check my answers.
+- [x] As an authorized user, I should be able to see my score.
+- [x] As an authorized user, I should be able to search for an existing card deck.
 ---
 #  Timeline and Milestones
 ---

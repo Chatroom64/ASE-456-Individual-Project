@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../main.dart' show flashcardService;
-
+import '../../features/quiz/quiz_screen.dart';
 import '../../data/models/deck.dart';
 import '../../data/models/flashcard.dart';
 import '../editor/editor_screen.dart';
+
 
 // Use the same services from deck_list_screen
 
@@ -51,10 +52,27 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final deck = widget.deck;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(deck.title),
+        actions: [
+          if (deck.toJson().containsKey('highScore'))
+            Text('High score: ${deck.toJson()['highScore']}',
+            style: const TextStyle(fontSize: 16)),
+
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => QuizScreen(deck: deck),
+                ),
+              );
+            },
+            child: const Text('Quiz Me!'),
+          ),
+        ],
+        
       ),
       body: deck.cards.isEmpty
           ? const Center(
@@ -126,6 +144,7 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
         },
         child: const Icon(Icons.add),
       ),
+      
     );
     
   }
