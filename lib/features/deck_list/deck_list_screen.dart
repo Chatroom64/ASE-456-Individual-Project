@@ -15,6 +15,8 @@ class DeckListScreen extends StatefulWidget {
 
 class _DeckListScreenState extends State<DeckListScreen> {
   late Future<List<Deck>> _decksFuture = Future.value([]);
+  List<Deck> _latestDeckList = [];
+
   String _searchQuery = '';
   String _sortOption = 'title_asc';
 
@@ -100,6 +102,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
       await _refreshDecks();
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +159,8 @@ class _DeckListScreenState extends State<DeckListScreen> {
             return deck.title.toLowerCase().contains(_searchQuery) ||
                 (deck.description?.toLowerCase().contains(_searchQuery) ?? false);
           }).toList();
+          _latestDeckList = filteredDecks;
+
 
           switch (_sortOption) {
             case 'title_asc':
@@ -205,10 +210,35 @@ class _DeckListScreenState extends State<DeckListScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addNewDeck,
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        FloatingActionButton(
+        heroTag: 'random',
+        onPressed: _openRandomDeck,
+        child: const Icon(Icons.casino),
+        tooltip: "Random Deck",
+        ),
+          FloatingActionButton(
+            onPressed: _addNewDeck,
+          child: const Icon(Icons.add),
+        ),
+      ]
+      ),
+    );
+  }
+  void _openRandomDeck() {
+  if (_latestDeckList.isEmpty) return;
+
+  final random = DateTime.now().millisecondsSinceEpoch % _latestDeckList.length;
+  final deck = _latestDeckList[random];
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => DeckDetailScreen(deck: deck),
       ),
     );
   }
 }
+

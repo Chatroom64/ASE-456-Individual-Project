@@ -46,7 +46,43 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
   setState(() {
     widget.deck.cards.removeWhere((c) => c.id == card.id);
   });
+  }
+  void _shareDeck(Deck deck) async {
+  final controller = TextEditingController();
+
+  final email = await showDialog<String>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Share Deck'),
+      content: TextField(
+        controller: controller,
+        decoration: const InputDecoration(labelText: 'Recipient email'),
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, controller.text.trim()),
+          child: const Text('Share'),
+        ),
+      ],
+    ),
+  );
+
+  if (email == null || email.isEmpty) return;
+
+  // For now, just print or store the email
+  print('Deck "${deck.title}" shared with: $email');
+
+  // Later, this is where you would update a shared list in Firestore
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Deck shared with $email')),
+  );
 }
+
 
 
   @override
@@ -71,6 +107,10 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
             },
             child: const Text('Quiz Me!'),
           ),
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () => _shareDeck(deck),
+          )
         ],
         
       ),
