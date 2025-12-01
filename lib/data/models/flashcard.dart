@@ -26,16 +26,29 @@ class Flashcard {
     };
   }
 
-  factory Flashcard.fromJson(Map<String, dynamic> json) {
-    return Flashcard(
-      id: json['id'],
-      question: json['question'] ?? '',
-      answer: json['answer'] ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
-    );
+  // Add this factory method
+  factory Flashcard.fromMap(Map<String, dynamic> map) {
+  return Flashcard(
+    id: map['id'] ?? '',
+    question: map['question'] ?? '',
+    answer: map['answer'] ?? '',
+    createdAt: map['createdAt'] != null
+        ? DateTime.parse(map['createdAt'])
+        : DateTime.now(),
+    updatedAt: map['updatedAt'] != null
+        ? DateTime.parse(map['updatedAt'])
+        : DateTime.now(),
+  );
+}
+
+
+  // Optional: toMap for saving back to Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'question': question,
+      'answer': answer,
+    };
   }
 
-  String toRawJson() => jsonEncode(toJson());
-  factory Flashcard.fromRawJson(String str) => Flashcard.fromJson(jsonDecode(str));
 }

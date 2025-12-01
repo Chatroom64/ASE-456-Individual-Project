@@ -3,48 +3,46 @@ import '../../data/models/deck.dart';
 import '../../data/models/flashcard.dart';
 import 'storage_service.dart';
 
-
 class FlashcardService {
   final StorageService _storage;
 
   FlashcardService(this._storage);
-  
 
   Future<void> init() => _storage.init();
 
   Future<void> addDeck(Deck deck) async {
-    await _storage.saveDeck(deck.id, deck.toJson());
+    await _storage.saveDeck(deck.id, deck.toMap());
   }
 
-  /// Update an existing deck (saves the deck JSON at its id)
+  /// Update an existing deck (saves the deck map at its id)
   Future<void> updateDeck(Deck deck) async {
-    await _storage.saveDeck(deck.id, deck.toJson());
-  }
-  // Attempt to delete a single card
-  Future<void> deleteCard(String deckId, String cardId) async {
-  final current = await getDeckById(deckId);
-  if (current == null) return;
-  current.removeCard(cardId); // removes only that card
-  await updateDeck(current);
+    await _storage.saveDeck(deck.id, deck.toMap());
   }
 
+  /// Delete a single card from a deck
+  Future<void> deleteCard(String deckId, String cardId) async {
+    final current = await getDeckById(deckId);
+    if (current == null) return;
+    current.removeCard(cardId);
+    await updateDeck(current);
+  }
 
   Future<List<Deck>> getAllDecks() async {
-    final raw = _storage.getAllDecks(); // List<Map<String,dynamic>>
-    return raw.map((m) => Deck.fromJson(m)).toList();
+    final raw = await _storage.getAllDecks(); // List<Map<String,dynamic>>
+    return raw.map((m) => Deck.fromMap(m)).toList();
   }
 
   Future<Deck?> getDeckById(String deckId) async {
-    final map = _storage.getDeck(deckId);
+    final map = await _storage.getDeck(deckId);
     if (map == null) return null;
-    return Deck.fromJson(map);
+    return Deck.fromMap(map);
   }
 
   Future<void> deleteDeck(String deckId) async {
     await _storage.deleteDeck(deckId);
   }
 
-  // convenience: add a flashcard to an existing deck and persist
+  /// Convenience: add a flashcard to an existing deck and persist
   Future<void> addCardToDeck(String deckId, Flashcard card) async {
     final current = await getDeckById(deckId);
     if (current == null) return;

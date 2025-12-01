@@ -34,25 +34,36 @@ Map<String, dynamic> toJson() {
   };
 }
 
-factory Deck.fromJson(Map<String, dynamic> json) {
+factory Deck.fromMap(Map<String, dynamic> map) {
   return Deck(
-    id: json['id'],
-    title: json['title'],
-    description: json['description'],
-    cards: (json['cards'] as List<dynamic>?)
-            ?.map((c) => Flashcard.fromJson(c))
-            .toList() ??
-        [],
-    createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-    updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
-    quizCount: json['quizCount'] ?? 0,
+    id: map['id'] ?? '',
+    title: map['title'] ?? '',
+    description: map['description'],
+    createdAt: map['createdAt'] != null
+        ? DateTime.parse(map['createdAt'])
+        : DateTime.now(),
+    updatedAt: map['updatedAt'] != null
+        ? DateTime.parse(map['updatedAt'])
+        : DateTime.now(),
+    quizCount: map['quizCount'] ?? 0,
+    cards: map['cards'] != null
+        ? List<Flashcard>.from(
+            (map['cards'] as List<dynamic>).map((c) => Flashcard.fromMap(c)))
+        : [],
   );
 }
 
-  // JSON encode and decode for extra utility
-  String toRawJson() => jsonEncode(toJson());
-  factory Deck.fromRawJson(String str) => Deck.fromJson(jsonDecode(str));
 
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'createdAt': createdAt.toIso8601String(),
+      'quizCount': quizCount,
+      'cards': cards.map((c) => c.toMap()).toList(),
+    };
+  }
   void addCard(Flashcard card) {
     cards.add(card);
     updatedAt = DateTime.now();
