@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'auth_service.dart';
-import '../../../features/deck_list/deck_list_screen.dart';
+import '../auth/auth_service.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -12,7 +11,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final AuthService _authService = AuthService();
 
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoginMode = true;
@@ -25,45 +24,34 @@ class _AuthScreenState extends State<AuthScreen> {
       _errorMessage = null;
     });
 
-    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (username.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter both username and password.';
+        _errorMessage = 'Enter both email and password';
         _loading = false;
       });
       return;
     }
 
-    bool success;
-    if (_isLoginMode) {
-      success = await _authService.signIn(username, password);
-      if (!success) {
-        setState(() {
-          _errorMessage = 'Invalid credentials.';
-          _loading = false;
-        });
-        return;
-      }
-    } else {
-      success = await _authService.signUp(username, password);
-      if (!success) {
-        setState(() {
-          _errorMessage = 'An account already exists.';
-          _loading = false;
-        });
-        return;
-      }
+    bool success = _isLoginMode
+        ? await _authService.signIn(email, password)
+        : await _authService.signUp(email, password);
+
+    if (!success) {
+      setState(() {
+        _errorMessage =
+            _isLoginMode ? 'Invalid credentials' : 'Account already exists';
+        _loading = false;
+      });
+      return;
     }
 
-    // If successful, go to the deck list
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DeckListScreen()),
-      );
-    }
+    setState(() {
+      _loading = false;
+    });
+    // No need to navigate manually; AuthGate will handle it
   }
 
   @override
@@ -89,20 +77,14 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 24),
                   TextField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Username',
-                      border: OutlineInputBorder(),
-                    ),
+                    controller: _emailController,
+                    decoration: const InputDecoration(labelText: 'Email'),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: const InputDecoration(labelText: 'Password'),
                   ),
                   const SizedBox(height: 24),
                   if (_errorMessage != null)
@@ -124,8 +106,8 @@ class _AuthScreenState extends State<AuthScreen> {
                       });
                     },
                     child: Text(_isLoginMode
-                        ? "Don't have an account? Sign up"
-                        : "Already have an account? Sign in"),
+                        ? "Don't have an account? Sign Up"
+                        : "Already have an account? Sign In"),
                   ),
                 ],
               ),

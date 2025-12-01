@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../main.dart' show flashcardService, storageService;
-//import '../../core/services/flashcard_service.dart';
-//import '../../core/services/storage_service.dart';
+import '../../core/services/flashcard_service.dart';
+import '../../core/services/storage_service.dart';
 import '../../data/models/deck.dart';
 import '../../data/models/flashcard.dart';
 import '../../features/deck_detail/deck_detail_screen.dart';
@@ -26,19 +26,39 @@ class _DeckListScreenState extends State<DeckListScreen> {
   late Future<List<Deck>> _decksFuture;
    String _searchQuery = '';
    String _sortOption = 'title_asc'; // default sort
+  late FlashcardService _deckService;
+  List<Deck> _allDecks = [];
+  List<Deck> _filteredDecks = [];
+ 
 
   @override
   void initState() {
     super.initState();
-    storageService.init();
-    _decksFuture = flashcardService.getAllDecks();
+    _deckService = FlashcardService(StorageService());
+    _loadDecks();
+    _initialize();
   }
+  Future<void> _initialize() async {
+  await storageService.init();
+  final decks = await flashcardService.getAllDecks();
+  setState(() {
+    _decksFuture = Future.value(decks);
+  });
+}
 
   Future<void> _refreshDecks() async {
     setState(() {
       _decksFuture = flashcardService.getAllDecks();
     });
   }
+  Future<void> _loadDecks() async {
+  final decks = await _deckService.getAllDecks();
+  setState(() {
+    _allDecks = decks;
+    _filteredDecks = List.from(_allDecks); // apply search later
+  });
+}
+
 
 Future<void> _addNewDeck() async {
   final controller = TextEditingController();
@@ -162,27 +182,51 @@ Future<void> _addNewDeck() async {
             onRefresh: _refreshDecks,
             
             child: ListView.builder(
+              
              itemCount: filteredDecks.length,
                itemBuilder: (context, index) {
                 final deck = filteredDecks[index]; {
-                final deck = decks[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: ListTile(
-                    title: Text(deck.title),
-                    subtitle: Text('${deck.cards.length} cards'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DeckDetailScreen(deck: deck),
+
+                return ListTile(
+                  title: Text(deck.title),
+                  subtitle: Text("${deck.cards.length} cards"),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Delete deck?"),
+                          content: Text("Are you sure you want to delete \"${deck.title}\"? This cannot be undone."),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text("Cancel"),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
                         ),
                       );
-                    },
 
+                      if (confirm == true) {
+                        await _deckService.deleteDeck(deck.id);
+                        _loadDecks(); // refresh list after deletion
+                      }
+                    },
                   ),
-                );
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DeckDetailScreen(deck: deck),
+                      ),
+                    ).then((_) => _loadDecks()); // update list when coming back
+                  },
+                  );
+
               }
             },
             ),

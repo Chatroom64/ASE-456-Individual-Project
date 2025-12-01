@@ -1,61 +1,33 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
-  static const _keyUsername = 'username';
-  static const _keyPassword = 'password';
-  static const _keyLoggedIn = 'is_logged_in';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  late SharedPreferences _prefs;
-  bool _initialized = false;
+  User? get currentUser => _auth.currentUser;
 
-  Future<void> init() async {
-    if (_initialized) return;
-    _prefs = await SharedPreferences.getInstance();
-    _initialized = true;
-  }
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  /// Registers a new user (if not already registered)
-  Future<bool> signUp(String username, String password) async {
-    await init();
-    final existingUser = _prefs.getString(_keyUsername);
-    if (existingUser != null) {
-      // already signed up
+  Future<bool> signIn(String email, String password) async {
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      print('Sign in error: ${e.code}');
       return false;
     }
-    await _prefs.setString(_keyUsername, username);
-    await _prefs.setString(_keyPassword, password);
-    await _prefs.setBool(_keyLoggedIn, true);
-    return true;
   }
 
-  /// Signs in if username and password match
-  Future<bool> signIn(String username, String password) async {
-    await init();
-    final storedUser = _prefs.getString(_keyUsername);
-    final storedPass = _prefs.getString(_keyPassword);
-
-    if (storedUser == username && storedPass == password) {
-      await _prefs.setBool(_keyLoggedIn, true);
+  Future<bool> signUp(String email, String password) async {
+    try {
+      await _auth.createUserWithEmailAndPassword(email: email, password: password);
       return true;
+    } on FirebaseAuthException catch (e) {
+      print('Sign up error: ${e.code}');
+      return false;
     }
-    return false;
   }
 
-  /// Logs out the current user
   Future<void> signOut() async {
-    await init();
-    await _prefs.setBool(_keyLoggedIn, false);
-  }
-
-  /// Checks if user is logged in
-  Future<bool> isLoggedIn() async {
-    await init();
-    return _prefs.getBool(_keyLoggedIn) ?? false;
-  }
-
-  /// Optionally clear stored credentials (for testing)
-  Future<void> clearAll() async {
-    await init();
-    await _prefs.clear();
+    await _auth.signOut();
   }
 }
